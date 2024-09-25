@@ -6,6 +6,7 @@ const getAllExercises = async (req: Request, res: Response) => {
     const response = await Exercise.findAll();
     console.log(response);
     res.json(response);
+    return response;
   } catch (error) {
     console.log(error);
   }
