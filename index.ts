@@ -33,6 +33,7 @@ Workout.belongsTo(User);
 User.hasMany(Workout);
 Workout.hasMany(UserExercise);
 UserExercise.belongsTo(Workout);
+UserExercise.belongsTo(User, { foreignKey: "userId" });
 
 // Sync database and start the server
 dbConnect.sync().then(() => {

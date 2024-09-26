@@ -4,7 +4,7 @@ import { User } from "./user";
 
 interface IWorkout {
   workoutId: number;
-  userId: number;
+  UserId: number;
   date: Date;
 }
 
@@ -15,7 +15,7 @@ class Workout
   implements IWorkout
 {
   public workoutId!: number;
-  public userId!: number;
+  public UserId!: number;
   public date!: Date;
 
   public readonly createdAt!: Date;
@@ -31,7 +31,7 @@ Workout.init(
       autoIncrement: true,
       allowNull: false,
     },
-    userId: {
+    UserId: {
       type: DataTypes.INTEGER,
       allowNull: false,
     },

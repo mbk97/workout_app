@@ -1,51 +1,86 @@
 import { Request, Response } from "express";
 import { User } from "../models/user";
-import { Exercise } from "../models/exercises";
 import { Workout } from "../models/workout";
 import { UserExercise } from "../models/userExercise";
 
 const createWorkout = async (req: Request, res: Response) => {
   const { userId, exercises, date } = req.body;
+
+  // Validate input
   if (!userId || !date || !exercises || !Array.isArray(exercises)) {
-    return res.status(400).json({
+    res.status(400).json({
       message:
-        "Invalid input. Make sure to provide userId, date, and an array of exercises.",
+        "Invalid input. Make sure to provide userId, date, and a list of exercises.",
     });
+    return;
   }
+
+  // ! Remove the hard coded user
   const testUser = await User.findAll();
+  const workoutDate = new Date(date);
 
   const workout = await Workout.create({
-    userId: testUser[0].id,
-    date: new Date("2024-10-10"),
+    date: workoutDate,
+    UserId: testUser[0].id,
   });
 
   if (!workout) {
-    res.status(400).json({
+    return res.status(400).json({
       message: "Failed to create workout",
     });
     return;
   }
 
   const newExercise = await UserExercise.bulkCreate(
-    exercises.map((exercise) => {
-      return {
-        workoutId: workout.workoutId,
-        nameOfUserExercise: exercise.nameOfUserExercise,
-        numberOfSets: exercise.numberOfSets,
-        numberOfRepetitions: exercise.numberOfRepetitions,
-        weight: exercise.weight || null,
-      };
-    }),
+    exercises.map((exercise) => ({
+      workoutId: workout.workoutId,
+      nameOfUserExercise: exercise.nameOfUserExercise,
+      numberOfSets: exercise.numberOfSets,
+      numberOfRepetitions: exercise.numberOfRepetitions,
+      weight: exercise.weight || null,
+      userId: 1,
+    })),
   );
-  if (newExercise) {
-    res.status(201).json({
-      message: "Workout created successfully",
-      data: {
-        ...workout,
-        newExercise,
-      },
+
+  // Ensure that only necessary fields are returned
+  const formattedWorkout = {
+    workoutId: workout.workoutId,
+    date: workout.date,
+  };
+
+  const formattedExercises = newExercise.map((exercise) => ({
+    exerciseId: exercise.exerciseId,
+    workoutId: exercise.workoutId,
+    nameOfUserExercise: exercise.nameOfUserExercise,
+    numberOfSets: exercise.numberOfSets,
+    numberOfRepetitions: exercise.numberOfRepetitions,
+    weight: exercise.weight,
+  }));
+
+  res.status(201).json({
+    message: "Workout created successfully",
+    data: {
+      workout: formattedWorkout,
+      exercises: formattedExercises,
+    },
+  });
+};
+
+const getAllUserWorkout = async (req: Request, res: Response) => {
+  const { id } = req.body;
+
+  const user = await User.findOne({
+    where: {
+      id,
+    },
+  });
+
+  if (!user) {
+    res.status(400).json({
+      message: "User not found!",
     });
+    return;
   }
 };
 
-export { createWorkout };
+export { createWorkout, getAllUserWorkout };

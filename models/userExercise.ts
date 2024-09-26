@@ -5,6 +5,7 @@ import { Workout } from "./workout";
 interface IUserExercise {
   exerciseId: number;
   workoutId: number;
+  userId: number;
   nameOfUserExercise: string;
   numberOfSets: number;
   numberOfRepetitions: number;
@@ -19,6 +20,7 @@ class UserExercise
   implements IUserExercise
 {
   public exerciseId!: number;
+  public userId!: number;
   public workoutId!: number;
   public nameOfUserExercise!: string;
   public numberOfSets!: number;
@@ -33,6 +35,10 @@ UserExercise.init(
       type: DataTypes.INTEGER,
       primaryKey: true,
       autoIncrement: true,
+      allowNull: false,
+    },
+    userId: {
+      type: DataTypes.INTEGER,
       allowNull: false,
     },
     workoutId: {
@@ -59,7 +65,7 @@ UserExercise.init(
   {
     sequelize: dbConnect,
     modelName: "UserExercise",
-    tableName: "userExercise",
+    tableName: "userexercise",
     timestamps: true,
   },
 );
