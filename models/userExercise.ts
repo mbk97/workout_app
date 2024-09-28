@@ -3,45 +3,42 @@ import { dbConnect } from "../config/db";
 import { Workout } from "./workout";
 
 interface IUserExercise {
-  exerciseId: number;
-  workoutId: number;
+  id: number;
   userId: number;
   nameOfUserExercise: string;
   numberOfSets: number;
   numberOfRepetitions: number;
   weight?: number;
+  WorkoutId?: number;
+  completed: boolean;
 }
 
 interface UserExerciseCreationAttributes
-  extends Optional<IUserExercise, "exerciseId"> {}
+  extends Optional<IUserExercise, "id"> {}
 
 class UserExercise
   extends Model<IUserExercise, UserExerciseCreationAttributes>
   implements IUserExercise
 {
-  public exerciseId!: number;
+  public id!: number;
   public userId!: number;
-  public workoutId!: number;
+  public WorkoutId!: number;
   public nameOfUserExercise!: string;
   public numberOfSets!: number;
   public numberOfRepetitions!: number;
+  public completed!: boolean;
   public weight?: number;
 }
 
-// Initialize the UserExercise model
 UserExercise.init(
   {
-    exerciseId: {
+    id: {
       type: DataTypes.INTEGER,
       primaryKey: true,
       autoIncrement: true,
       allowNull: false,
     },
     userId: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-    },
-    workoutId: {
       type: DataTypes.INTEGER,
       allowNull: false,
     },
@@ -60,6 +57,10 @@ UserExercise.init(
     weight: {
       type: DataTypes.FLOAT,
       allowNull: true,
+    },
+    completed: {
+      type: DataTypes.BOOLEAN,
+      allowNull: false,
     },
   },
   {

@@ -3,20 +3,24 @@ import { dbConnect } from "../config/db";
 import { User } from "./user";
 
 interface IWorkout {
-  workoutId: number;
+  id: number;
   UserId: number;
+  username: string;
   date: Date;
+  completed: boolean;
 }
 
-interface WorkoutCreationAttributes extends Optional<IWorkout, "workoutId"> {}
+interface WorkoutCreationAttributes extends Optional<IWorkout, "id"> {}
 
 class Workout
   extends Model<IWorkout, WorkoutCreationAttributes>
   implements IWorkout
 {
-  public workoutId!: number;
+  public id!: number;
   public UserId!: number;
+  public username!: string;
   public date!: Date;
+  public completed!: boolean;
 
   public readonly createdAt!: Date;
   public readonly updatedAt!: Date;
@@ -25,7 +29,7 @@ class Workout
 // Initialize the Workout model
 Workout.init(
   {
-    workoutId: {
+    id: {
       type: DataTypes.INTEGER,
       primaryKey: true,
       autoIncrement: true,
@@ -35,8 +39,16 @@ Workout.init(
       type: DataTypes.INTEGER,
       allowNull: false,
     },
+    username: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
     date: {
       type: DataTypes.DATE,
+      allowNull: false,
+    },
+    completed: {
+      type: DataTypes.BOOLEAN,
       allowNull: false,
     },
   },
