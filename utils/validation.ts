@@ -31,9 +31,6 @@ export const userRegistrationSchema = Joi.object({
       "string.pattern.base":
         "Password must include at least one lowercase letter, one uppercase letter, one number, and one special character",
     }),
-  //   role: Joi.string().valid("admin", "user").required().messages({
-  //     "any.only": "Role must be either 'admin' or 'user'",
-  //   }),
 });
 
 // Schema for user login validation
@@ -54,5 +51,32 @@ export const userLoginSchema = Joi.object({
       "string.min": "Password must be at least 8 characters long",
       "string.pattern.base":
         "Password must include at least one lowercase letter, one uppercase letter, one number, and one special character",
+    }),
+});
+
+export const scheduleWorkoutValidationSchema = Joi.object({
+  username: Joi.string().min(3).max(50).required().messages({
+    "string.empty": "Username is required",
+    "string.min": "Username must be at least 3 characters long",
+    "string.max": "Username cannot exceed 50 characters",
+  }),
+
+  workoutId: Joi.number().required().messages({
+    "number.base": "Workout ID must be a number",
+    "any.required": "Workout ID is required",
+  }),
+
+  workoutDate: Joi.date().greater("now").required().messages({
+    "date.greater": "Workout date cannot be in the past",
+    "any.required": "Workout date is required",
+  }),
+
+  workoutTime: Joi.string()
+    .pattern(/^([01]\d|2[0-3]):([0-5]\d)$/) // 24-hour time format validation (HH:mm)
+    .required()
+    .messages({
+      "string.empty": "Workout time is required",
+      "string.pattern.base":
+        "Workout time must be in HH:mm format (24-hour time)",
     }),
 });

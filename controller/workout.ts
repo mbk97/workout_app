@@ -2,6 +2,9 @@ import { Request, Response } from "express";
 import { User } from "../models/user";
 import { Workout } from "../models/workout";
 import { UserExercise } from "../models/userExercise";
+import { Schedule } from "../models/schedule";
+import { scheduleWorkoutValidationSchema, validate } from "../utils/validation";
+import { sendEmail } from "../services/email";
 
 const createWorkout = async (req: Request, res: Response) => {
   const { userId, exercises, date, username } = req.body;
@@ -294,4 +297,123 @@ const deleteWorkout = async (req: Request, res: Response) => {
   }
 };
 
-export { createWorkout, getAllUserWorkout, updateWorkout, deleteWorkout };
+const scheduleWorkout = async (req: Request, res: Response) => {
+  const { workoutTime, workoutDate, workoutId, username } = req.body;
+  const error = validate(scheduleWorkoutValidationSchema, req.body);
+
+  if (error) {
+    res.status(400).json({
+      message: error,
+    });
+    return;
+  }
+
+  try {
+    const workout = await Workout.findOne({
+      where: {
+        id: workoutId,
+      },
+    });
+
+    if (!workout) {
+      res.status(400).json({
+        message: "Workout does not exist",
+      });
+      return;
+    }
+
+    const user = await User.findOne({
+      where: {
+        username,
+      },
+    });
+
+    if (!user) {
+      res.status(400).json({
+        message: "User does not exist",
+      });
+      return;
+    }
+    const userDate = new Date(workoutDate);
+    const currentDate = new Date();
+
+    // Set currentDate's time to 00:00:00 for date-only comparison
+    currentDate.setHours(0, 0, 0, 0);
+
+    // Check if the workoutDate is in the past
+    if (userDate < currentDate) {
+      res.status(400).json({
+        message: "Workout date cannot be in the past",
+      });
+      return;
+    }
+
+    // Validate workoutTime in 24-hour format (HH:mm)
+    const timeRegex = /^([01]\d|2[0-3]):([0-5]\d)$/;
+    if (!timeRegex.test(workoutTime)) {
+      return res.status(400).json({
+        message: "Invalid time format. Please use HH:mm (24-hour format).",
+      });
+    }
+
+    // Check if the workoutDate is today and the workoutTime is in the past
+    const isToday = userDate.toDateString() === currentDate.toDateString();
+
+    if (isToday) {
+      // Parse user workout time (HH:mm)
+      const [hours, minutes] = workoutTime.split(":").map(Number); // Convert to numbers
+      const userTime = new Date(userDate.setHours(hours, minutes, 0, 0)); // Set workout time to Date object
+
+      // Get current time
+      const currentTime = new Date();
+
+      // Check if the workout time is in the past
+      if (userTime < currentTime) {
+        return res.status(400).json({
+          message: "Workout time cannot be in the past",
+        });
+      }
+    }
+
+    const exercises = await UserExercise.findAll({
+      where: {
+        WorkoutId: workoutId,
+      },
+    });
+
+    const scheduledWorkout = await Schedule.create({
+      WorkoutId: workoutId,
+      username: user.username,
+      workoutTime: workoutTime,
+      workoutDate: workoutDate,
+    });
+
+    const subject = "Workout Reminder";
+    const text = `Don't forget your workout scheduled for today at 10:00`;
+
+    await sendEmail("oyindamola850@gmail.com", subject, text);
+
+    if (scheduledWorkout) {
+      res.status(201).json({
+        message: "Workout scheduled successfully",
+        data: {
+          scheduledWorkout,
+          exercises,
+        },
+      });
+    }
+  } catch (error) {
+    res.status(500).json({
+      message: "Internal Server error",
+      error: error.message,
+    });
+  }
+};
+
+export {
+  createWorkout,
+  getAllUserWorkout,
+  updateWorkout,
+  deleteWorkout,
+  scheduleWorkout,
+};

@@ -7,6 +7,8 @@ import { Workout } from "./models/workout";
 import { User } from "./models/user";
 import { workoutRoute } from "./routes/workout";
 import { UserExercise } from "./models/userExercise";
+import { Schedule } from "./models/schedule";
+import "./services/scheduler";
 
 dotenv.config();
 
@@ -31,9 +33,12 @@ app.use("/workout", workoutRoute);
 // Define associations
 Workout.belongsTo(User);
 User.hasMany(Workout);
-Workout.hasMany(UserExercise);
-UserExercise.belongsTo(Workout);
+Workout.hasMany(UserExercise, { onDelete: "CASCADE" });
+UserExercise.belongsTo(Workout, { onDelete: "CASCADE" });
 UserExercise.belongsTo(User, { foreignKey: "userId" });
+Workout.hasMany(Schedule, { foreignKey: "WorkoutId", onDelete: "CASCADE" });
+Schedule.belongsTo(Workout, { foreignKey: "WorkoutId", onDelete: "CASCADE" });
+//! With onDelete: 'CASCADE', when you delete a Workout, it should automatically delete the associated UserExercise records.
 
 // Sync database and start the server
 dbConnect.sync().then(() => {
