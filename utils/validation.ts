@@ -66,7 +66,7 @@ export const scheduleWorkoutValidationSchema = Joi.object({
     "any.required": "Workout ID is required",
   }),
 
-  workoutDate: Joi.date().greater("now").required().messages({
+  workoutDate: Joi.date().required().messages({
     "date.greater": "Workout date cannot be in the past",
     "any.required": "Workout date is required",
   }),

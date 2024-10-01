@@ -3,6 +3,7 @@ import {
   createWorkout,
   deleteWorkout,
   getAllUserWorkout,
+  getPendingWorkouts,
   scheduleWorkout,
   updateWorkout,
 } from "../controller/workout";
@@ -14,5 +15,6 @@ workoutRoute.get("/", getAllUserWorkout);
 workoutRoute.put("/:workoutId", updateWorkout);
 workoutRoute.delete("/:workoutId", deleteWorkout);
 workoutRoute.post("/schedule", scheduleWorkout);
+workoutRoute.get("/pending", getPendingWorkouts);
 
 export { workoutRoute };

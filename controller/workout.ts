@@ -5,6 +5,7 @@ import { UserExercise } from "../models/userExercise";
 import { Schedule } from "../models/schedule";
 import { scheduleWorkoutValidationSchema, validate } from "../utils/validation";
 import { sendEmail } from "../services/email";
+import { Op } from "sequelize";
 
 const createWorkout = async (req: Request, res: Response) => {
   const { userId, exercises, date, username } = req.body;
@@ -312,6 +313,7 @@ const scheduleWorkout = async (req: Request, res: Response) => {
     const workout = await Workout.findOne({
       where: {
         id: workoutId,
+        username: username,
       },
     });
 
@@ -388,11 +390,6 @@ const scheduleWorkout = async (req: Request, res: Response) => {
       workoutDate: workoutDate,
     });
 
-    const subject = "Workout Reminder";
-    const text = `Don't forget your workout scheduled for today at 10:00`;
-
-    await sendEmail("oyindamola850@gmail.com", subject, text);
-
     if (scheduledWorkout) {
       res.status(201).json({
         message: "Workout scheduled successfully",
@@ -410,10 +407,35 @@ const scheduleWorkout = async (req: Request, res: Response) => {
   }
 };
 
+const getPendingWorkouts = async (req: Request, res: Response) => {
+  const currentDateTime = new Date();
+
+  // * Op.gt: This is Sequelize's operator for "greater than" (>). It ensures that only workouts whose time is later than the current time are returned.
+
+  try {
+    const upcomingWorkouts = await Schedule.findAll({
+      where: {
+        workoutDate: currentDateTime.toISOString().split("T")[0], // Match date (YYYY-MM-DD)
+        workoutTime: {
+          [Op.gt]: currentDateTime.toTimeString().substring(0, 5), // Match time greater than current time (HH:mm)
+        },
+      },
+    });
+
+    res.status(200).json({
+      message: "Upcoming workouts retrieved successfully",
+      data: upcomingWorkouts,
+    });
+  } catch (error) {
+    res.status(500).json({ message: "Error retrieving workouts", error });
+  }
+};
+
 export {
   createWorkout,
   getAllUserWorkout,
   updateWorkout,
   deleteWorkout,
   scheduleWorkout,
+  getPendingWorkouts,
 };
