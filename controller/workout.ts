@@ -391,6 +391,10 @@ const scheduleWorkout = async (req: Request, res: Response) => {
     });
 
     if (scheduledWorkout) {
+      const subject = "Workout Schedule";
+      const html = `<html>hello ${user.username} <br /> You just scheduled a workout for ${workoutDate} by ${workoutTime}. <br />Ensure you remember to carry out this workout as planned</html>`;
+
+      sendEmail(user.email, subject, "", html);
       res.status(201).json({
         message: "Workout scheduled successfully",
         data: {
@@ -409,21 +413,22 @@ const scheduleWorkout = async (req: Request, res: Response) => {
 
 const getPendingWorkouts = async (req: Request, res: Response) => {
   const currentDateTime = new Date();
+  const { username } = req.body;
 
   // * Op.gt: This is Sequelize's operator for "greater than" (>). It ensures that only workouts whose time is later than the current time are returned.
 
   try {
     const upcomingWorkouts = await Schedule.findAll({
       where: {
-        workoutDate: currentDateTime.toISOString().split("T")[0], // Match date (YYYY-MM-DD)
         workoutTime: {
-          [Op.gt]: currentDateTime.toTimeString().substring(0, 5), // Match time greater than current time (HH:mm)
+          [Op.gt]: currentDateTime.toTimeString().substring(0, 5),
         },
+        username,
       },
     });
 
     res.status(200).json({
-      message: "Upcoming workouts retrieved successfully",
+      message: `Upcoming workouts retrieved successfully for ${username}`,
       data: upcomingWorkouts,
     });
   } catch (error) {

@@ -30,6 +30,7 @@ cron.schedule("* * * * *", async () => {
             tenMinutesLater.toTimeString().substring(0, 5), // 10 minutes from now
           ],
         },
+        emailSent: false,
       },
     });
 
@@ -39,12 +40,15 @@ cron.schedule("* * * * *", async () => {
         const userEmail = await getUserEmail(workout.username); // Get user's email
         if (userEmail) {
           const subject = "Workout Reminder";
-          const text = `Don't forget your workout scheduled for today at ${workout.workoutTime}.`;
+          const text = ``;
+          const html = `<html>Don't forget your workout scheduled for today at ${workout.workoutTime}.</html>`;
 
-          await sendEmail(userEmail, subject, text);
+          await sendEmail(userEmail, subject, text, html);
           console.log(
             `Email sent to ${userEmail} for workout at ${workout.workoutTime}`,
           );
+          workout.emailSent = true;
+          await workout.save();
         }
       } catch (emailError) {
         console.error(

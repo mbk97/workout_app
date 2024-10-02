@@ -8,6 +8,7 @@ interface ISchedule {
   username: string;
   workoutDate: Date;
   workoutTime: string;
+  emailSent?: boolean;
 }
 
 interface ScheduleCreationAttributes extends Optional<ISchedule, "id"> {}
@@ -21,6 +22,7 @@ class Schedule
   public username!: string;
   public workoutDate!: Date;
   public workoutTime!: string;
+  public emailSent!: boolean;
 
   public readonly createdAt!: Date;
   public readonly updatedAt!: Date;
@@ -50,6 +52,10 @@ Schedule.init(
     workoutTime: {
       type: DataTypes.STRING,
       allowNull: false,
+    },
+    emailSent: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false,
     },
   },
   {

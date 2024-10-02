@@ -13,12 +13,18 @@ const transporter = nodemailer.createTransport({
   },
 });
 
-const sendEmail = async (to: string, subject: string, text: string) => {
+const sendEmail = async (
+  to: string,
+  subject: string,
+  text: string,
+  html: any,
+) => {
   const mailOptions = {
     from: "oyindamola850@gmail.com",
     to,
     subject,
     text,
+    html,
   };
 
   try {
