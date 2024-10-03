@@ -8,9 +8,17 @@ import { User } from "./models/user";
 import { workoutRoute } from "./routes/workout";
 import { UserExercise } from "./models/userExercise";
 import { Schedule } from "./models/schedule";
+import session from "express-session";
+import { Sequelize } from "sequelize";
+import SequelizeStore from "connect-session-sequelize";
 import "./services/scheduler";
 
 dotenv.config();
+
+const SequelizeSessionStore = SequelizeStore(session.Store);
+const store = new SequelizeSessionStore({
+  db: dbConnect, // your Sequelize database connection
+});
 
 // Database authentication
 dbConnect
@@ -24,6 +32,18 @@ const PORT = process.env.PORT || 5000;
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
+
+app.use(
+  session({
+    secret: "&hdh832&*",
+    resave: false,
+    saveUninitialized: true,
+    store,
+    cookie: { secure: false, maxAge: 2 * 60 * 1000 }, // 1 day
+  }),
+);
+// ** Finally, we set the secure option to true to ensure that the session cookie is only sent over HTTPS.
+store.sync();
 
 // Define routes
 app.use("/exercise", exerciseRoute);

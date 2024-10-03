@@ -102,6 +102,12 @@ const getAllUserWorkout = async (req: Request, res: Response) => {
       });
     }
 
+    console.log(req.session.id);
+
+    if (!req.session.id) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+
     // Find all workouts belonging to the user
     const workouts = await Workout.findAll({
       where: { UserId: user.id },

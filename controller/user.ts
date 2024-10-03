@@ -7,6 +7,7 @@ import {
 } from "../utils/validation";
 import { compare, genSalt, hash } from "bcryptjs";
 import { generateToken } from "../utils/token";
+import { ISession } from "../types/type";
 
 const createUser = async (req: Request, res: Response) => {
   const { username, password, email } = req.body;
@@ -78,15 +79,22 @@ const loginUser = async (req: Request, res: Response) => {
       console.log("Token generation failed");
       return res.status(500).json({ message: "Token generation error" });
     }
-
-    res.status(200).json({
-      message: "Login successful",
-      user: {
-        _id: user.id,
-        username: user.username,
-        email: user.email,
-        token,
-      },
+    // Regenerate session ID on login to prevent session fixation
+    req.session.regenerate((err) => {
+      if (err) {
+        return res.status(500).json({ message: "Session regeneration failed" });
+      }
+      (req.session as any).userId = user.id;
+      req.session.save(() => {
+        res.status(200).json({
+          message: "Login successful",
+          user: {
+            _id: user.id,
+            username: user.username,
+            email: user.email,
+          },
+        });
+      });
     });
   } catch (error) {
     console.error("Error during login:", error);
